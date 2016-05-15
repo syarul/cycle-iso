@@ -1,7 +1,7 @@
 # cycle-iso
 A simple isomorphic cycle app starter
 
-This is a very basic setup for an isomorphic [Cycle.js](http://cycle.js.org/) framework, it does not encompase the [MVI](http://cycle.js.org/model-view-intent.html) (Model, View, Intent) as to keep it as basic, cleaner, declarative and has bare minimum setting to run.
+This is a very basic setup for an isomorphic [Cycle.js](http://cycle.js.org/) framework, it does not encompass the [MVI](http://cycle.js.org/model-view-intent.html) (Model, View, Intent) as to keep it as basic, cleaner, declarative and has bare minimum setting to run.
 
 This app use webpack and babel as part of the build process.
 
