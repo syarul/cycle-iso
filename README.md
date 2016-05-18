@@ -5,6 +5,10 @@ This is a very basic setup for an isomorphic [Cycle.js](http://cycle.js.org/) fr
 
 This app use webpack and babel as part of the build process.
 
+## New Stuff
+
+Update to use Cycle.js/xstream from diversity branch
+
 ## How to extend this?
 
 - For complex routing you can start looking into [switchPath](https://github.com/staltz/switch-path), 

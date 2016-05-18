@@ -27,13 +27,12 @@
   },
   "homepage": "https://github.com/syarul/cycle-iso#readme",
   "dependencies": {
-    "@cycle/core": "^6.0.3",
-    "@cycle/dom": "^9.4.0",
-    "@cycle/history": "2.0.2",
-    "cycle-history": "^0.5.0",
+    "@cycle/dom": "^10.0.0-rc21",
+    "@cycle/history": "^3.1.0",
+    "@cycle/xstream-run": "^1.1.0",
     "express": "^4.13.4",
     "history": "^2.1.1",
-    "rx": "^4.1.0"
+    "xstream": "^2.2.1"
   },
   "devDependencies": {
     "babel-core": "^6.8.0",

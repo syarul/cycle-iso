@@ -1,8 +1,7 @@
-import { run } from '@cycle/core'
+import Cycle from '@cycle/xstream-run'
+import xs from 'xstream'
 import express from 'express'
-import {makeServerHistoryDriver} from 'cycle-history'
-import {Observable} from 'rx'
-import {html, head, title, body, div, script, makeHTMLDriver } from'@cycle/dom'
+import { html, head, title, body, div, script, makeHTMLDriver } from '@cycle/dom'
 import main from './driver/main'
 import path from 'path'
 
@@ -14,7 +13,7 @@ function wrapVTreeWithHTMLBoilerplate(vtree) {
       ]),
       body([
         div('#application', [vtree]),
-        script({src: '/static/bundle.js'})
+        script({attrs:{src: '/static/bundle.js'}})
       ])
     ])
   )
@@ -26,8 +25,8 @@ function prependHTML5Doctype(html) {
 
 function wrapAppResultWithBoilerplate(appFn) {
   return function wrappedAppFn(sources) {
-    let vtree$ = appFn(sources).DOM.take(1)
-    let wrappedVTree$ = Observable.combineLatest(vtree$, wrapVTreeWithHTMLBoilerplate)
+    let vtree$ = appFn(sources).DOM
+    let wrappedVTree$ = xs.combine(wrapVTreeWithHTMLBoilerplate, vtree$).take(1)
     return {
       DOM: wrappedVTree$,
       History: appFn(sources).History.take(1)
@@ -35,7 +34,7 @@ function wrapAppResultWithBoilerplate(appFn) {
   }
 }
 
-let server = express()
+const server = express()
 
 server.use('/static', express.static(path.join(__dirname, '/static')))
 
@@ -48,18 +47,23 @@ server.use((req, res) => {
   }
   console.log(`req: ${req.method} ${req.url}`)
 
-  let wrappedAppFn = wrapAppResultWithBoilerplate(main);
+  const wrappedAppFn = wrapAppResultWithBoilerplate(main)
 
-  let {sources} = run( wrappedAppFn, { 
+  const context$ = xs.of({pathname: req.url});
+  const {sources, run} = Cycle(wrappedAppFn, { 
     DOM: makeHTMLDriver(), 
-    History: makeServerHistoryDriver({
-      pathname: req.url
-    })
+    History: () => context$,
+    PreventDefault: () => {}
   })
-  let html$ = sources.DOM.map(prependHTML5Doctype)
-  html$.subscribe(html => res.send(html))
+  const html$ = sources.DOM.elements.map(prependHTML5Doctype)
+  html$.addListener({
+    next: html => res.send(html),
+    error: err => res.sendStatus(500),
+    complete: () => {}
+  });
+  run()
 })
 
-let port = process.env.PORT || 8080
+const port = process.env.PORT || 8080
 server.listen(port)
 console.log(`Listening on port ${port}`)

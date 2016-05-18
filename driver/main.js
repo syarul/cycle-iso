@@ -1,11 +1,19 @@
-import {Observable } from 'rx'
-import {p, a, ul, li, section, h1 } from '@cycle/dom'
+import xs from 'xstream'
+import { p, a, ul, li, section, h1 } from '@cycle/dom'
+
+function href(href){
+  return {
+    attrs: {
+      href: href
+    }
+  }
+}
 
 function renderMenu() {
   return (
     ul([
-      li([a('.link', {href: '/'}, 'Home')]),
-      li([a('.link', {href: '/about'}, 'About')])
+      li([a('.link', href('/'), 'Home')]),
+      li([a('.link', href('/about'), 'About')])
     ])
   )
 }
@@ -43,22 +51,18 @@ function renderNoPage() {
   )
 }
 
-function main({DOM, History }) {
+function main({DOM, History}) {
 
   // get location pathname from History
   const pathValue$ = History.map(location => location.pathname)
 
   // map url
-  const action$ = Observable.merge(
-    DOM.select('.link').events('click')
-    .doOnNext(ev => ev.preventDefault())
-    .map((ev) => ev.currentTarget.attributes.href.value)
-    .startWith(false)
-  )
+  const click$ = DOM.select('.link').events('click')
+  const preventedEvent$ = click$;
+  const action$ = click$.map(ev => ev.currentTarget.attributes.href.value)
 
-  // combine both streams and return the exact path
-  const route$ = Observable.combineLatest(action$, pathValue$)
-    .map(x => x = !x[0] ? x[1] : x[0])
+  // combine both streams and return the latest path
+  const route$ = xs.merge(action$, pathValue$)
 
   return {
     DOM: route$.map(route => {
@@ -66,7 +70,6 @@ function main({DOM, History }) {
       if (typeof window !== 'undefined') {
         window.history.pushState(null, '', route)
       }
-      // render the route page
       switch (route) {
         case '/':
           return renderHomePage()
@@ -76,7 +79,8 @@ function main({DOM, History }) {
           return renderNoPage()
       }
     }),
-    History: pathValue$.map(path => path)
+    History: pathValue$.map(path => path),
+    PreventDefault: preventedEvent$
   }
 }
 
