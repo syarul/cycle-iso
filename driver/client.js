@@ -8,7 +8,6 @@ const history = createHistory()
 
 function clientSideApp(responses) {
   let sinks = main(responses)
-  sinks.DOM = sinks.DOM.drop(1)
   return sinks
 }
 

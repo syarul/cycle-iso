@@ -4,6 +4,8 @@ import express from 'express'
 import { html, head, title, body, div, script, makeHTMLDriver } from '@cycle/dom'
 import main from './driver/main'
 import path from 'path'
+import falcorExpress from 'falcor-express'
+import falcorRouter from 'falcor-router'
 
 function wrapVTreeWithHTMLBoilerplate(vtree) {
   return (
@@ -26,15 +28,76 @@ function prependHTML5Doctype(html) {
 function wrapAppResultWithBoilerplate(appFn) {
   return function wrappedAppFn(sources) {
     let vtree$ = appFn(sources).DOM
-    let wrappedVTree$ = xs.combine(wrapVTreeWithHTMLBoilerplate, vtree$).take(1)
+    let wrappedVTree$ = xs.combine(wrapVTreeWithHTMLBoilerplate, vtree$)
     return {
       DOM: wrappedVTree$,
-      History: appFn(sources).History.take(1)
+      History: appFn(sources).History
     }
   }
 }
 
 const server = express()
+
+let data = [
+  {
+    index: 'home',
+    data: {
+      title: 'The homepage[Server]',
+      desc: 'Welcome to our spectacular web page with nothing special here.',
+      link: 'Contact us'
+    }
+  },
+  {
+    index: 'about',
+    data: {
+      title: 'Read more about us[Server]',
+      desc: 'This is the page where we describe ourselves.',
+      link: 'Contact us'
+    }
+  },
+  {
+    index: 'noroute',
+    data: {
+      title: '404 Page does not exist[Server]',
+      desc: 'This is the landing page when route is not found.',
+      link: 'Contact us'
+    }
+  }
+]
+
+server.use('/model.json', falcorExpress.dataSourceRoute((req, res) => {
+    return new falcorRouter([
+      {
+        route: data[0].index,
+        get: (pathSet) => {
+            let _path = data[0].index
+            return {
+                path: [_path],
+                value: data[0].data
+            }
+        }
+      },
+      {
+        route: 'data.byIndex[{keys}]["title", "desc", "link"]',
+        get: (pathSet) => {
+            var res = []
+            pathSet[2].forEach((index) => {
+                data.forEach((e) => {
+                  if(e.index == index){
+                    pathSet[3].forEach((info) => {
+                      res.push({
+                        path: ['data', 'byIndex', index, info],
+                        value: e.data[info]
+                      })
+                    })
+                  }
+                })
+            })
+            return res
+        }
+      },
+    ])
+}))
 
 server.use('/static', express.static(path.join(__dirname, '/static')))
 
