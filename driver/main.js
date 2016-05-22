@@ -27,9 +27,8 @@ request_2$.addListener({
 })
 */
 
-// *** uncomment for webpack dev server ***
-/*
-let model = new falcor.Model({
+// *** uncomment for webpack-dev-server ***
+/*const model = new falcor.Model({
   cache: {
     home: {
       title: 'The homepage',
@@ -47,33 +46,23 @@ let model = new falcor.Model({
       link: 'Contact us'
     }
   }
-})
-*/
+})*/
 
-function href(href){
-  return {
-    attrs: {
-      href: href
-    }
-  }
+const href = href => ({attrs: {href: href}})
+
+const renderMenu = () =>
+  ul([
+    li([a('.link', href('/'), 'Home')]),
+    li([a('.link', href('/about'), 'About')])
+  ])
+
+const routes = {
+  '/': 'home',
+  '/about': 'about'
 }
 
-function renderMenu() {
-  return (
-    ul([
-      li([a('.link', href('/'), 'Home')]),
-      li([a('.link', href('/about'), 'About')])
-    ])
-  )
-}
-
-function switchRoute(route){
-   switch (route) {
-        case '/': return 'home'
-        case '/about': return 'about'
-        default: return 'noroute'
-      }
-}
+const switchCase = (sources, defaultSource) => selector =>
+  sources[selector] || defaultSource
 
 function main({DOM, History}) {
 
@@ -87,54 +76,47 @@ function main({DOM, History}) {
 
   // combine both streams and return the latest path
   const route$ = xs.merge(action$, pathValue$)
-
-  const switcher$ = route$
-    .map(route => switchRoute(route))
+  
+  // fallback stream for error
+  // you can use this to show loading events
+  const fallback$ = xs.of({
+    title: '',
+    desc: '',
+    link: ''
+  })
 
   // request data from server/cache model
-  const falcor$ = switcher$
-    // --> client model
-    // .map(path => xs.fromPromise(model.get([path, ['title', 'desc', 'link']]))
-    // --> server request
-    .map(path => xs.fromPromise(request.get(['data', 'byIndex', [path], ['title', 'desc', 'link']]))
-    ).flatten()
+  const falcor$ = route$
+    .map(switchCase(routes, 'noroute'))
+    .map(path => {
 
-  // combine streams 
-  // --> client model
-  // const state$ = xs.combine((x, y) => [x, y.json], route$, falcor$)
-  // --> server request
-  const state$ = xs.combine((x, y) => [x, y.json.data.byIndex], route$, falcor$)
+      // --> client model ***use with webpack-dev-server***
+      /*let data = model.get([path, ['title', 'desc', 'link']])
+      return xs.fromPromise(data)
+        .map(data => ({path, data}))
+        .map(({path, data}) => data.json[path])*/
 
-  const fallback$ = xs.of(['/', {
-    home: {
-      title: '',
-      desc: '',
-      link: ''
-    }
-  }])
-
-  const final$ = state$.replaceError(err => fallback$)
+      // --> server request
+      let data = request.get(['data', 'byIndex', [path], ['title', 'desc', 'link']])
+      return xs.fromPromise(data)
+        .map(data => ({path, data}))
+        .map(({path, data}) => data.json.data.byIndex[path])
+    })
+    .flatten()
+    .replaceError(err => fallback$)
 
   return {
-    DOM: final$.map(state => {
-      let [route, data] = state
-      for(var attr in data){
-        attr = attr
-      }
-      // push the route into browser history stack
-      if (typeof window !== 'undefined') {
-        window.history.pushState(null, '', route)
-      }
+    DOM: falcor$.map(data => {
       return (
         section('.main', [
           renderMenu(), 
-          h1(data[attr].title), 
-          p(data[attr].desc), 
-          p(data[attr].link)
+          h1(data.title), 
+          p(data.desc), 
+          p(data.link)
         ])
       )
     }),
-    History: pathValue$.map(path => path),
+    History: action$,
     PreventDefault: preventedEvent$
   }
 }

@@ -5,6 +5,10 @@ This is isomorphic [Cycle.js](http://cycle.js.org/) framework with [falcor.js](h
 
 This app use webpack and babel as part of the build process.
 
+Thanks to
+@TylorS - for helping with routing
+@laszlokorte - for helping out with mapping object in streams.
+
 ## New Stuff
 
 - Added JSON Graph, rely on ```xstream.fromPromise()```
@@ -27,6 +31,7 @@ to run isomorphic server
 ```npm start```
 
 optionally to run webpack-dev-server
+please check ```driver/main.js``` file before doing this
 ```npm run webpack```
 
 ## PR is most welcome

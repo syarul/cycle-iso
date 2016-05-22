@@ -6,11 +6,6 @@ import main from './main'
 
 const history = createHistory()
 
-function clientSideApp(responses) {
-  let sinks = main(responses)
-  return sinks
-}
-
 function preventDefaultDriver(ev$) {
   ev$.addListener({
     next: ev => ev.preventDefault(),
@@ -19,7 +14,7 @@ function preventDefaultDriver(ev$) {
   });
 }
 
-run(clientSideApp, {
+run(main, {
   DOM: makeDOMDriver('#application'),
   History: makeHistoryDriver(history),
   PreventDefault: preventDefaultDriver
