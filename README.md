@@ -6,8 +6,8 @@ This is isomorphic [Cycle.js](http://cycle.js.org/) framework with [falcor.js](h
 This app use webpack and babel as part of the build process.
 
 Thanks to
-@TylorS - for helping with routing
-@laszlokorte - for helping out with mapping object in streams.
+[TylorS](https://github.com/TylorS) - for helping with routing
+[laszlokorte](https://github.com/laszlokorte) - for helping out with mapping object in streams.
 
 ## New Stuff
 
