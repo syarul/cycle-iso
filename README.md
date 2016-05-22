@@ -36,8 +36,7 @@ to run isomorphic server
 npm start
 ```
 
-optionally to run webpack-dev-server
-> please check `driver/main.js` file before doing this
+optionally to run webpack-dev-server (please check `driver/main.js` file before doing this)
 ```
 npm run webpack
 ```
