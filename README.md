@@ -22,16 +22,24 @@ Thanks to
 
 ## Install
 
-```npm install```
+```
+npm install
+```
 
 to run bundler
-```npm run build```
+```
+npm run build
+```
 
 to run isomorphic server
-```npm start```
+```
+npm start
+```
 
 optionally to run webpack-dev-server
-please check ```driver/main.js``` file before doing this
-```npm run webpack```
+> please check `driver/main.js` file before doing this
+```
+npm run webpack
+```
 
 ## PR is most welcome
